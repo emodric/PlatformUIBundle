@@ -25,6 +25,7 @@ YUI.add('ez-trashviewservice', function (Y) {
 
         initializer: function () {
             this.on('*:emptyTrashAction', this._emptyTrashConfirmBox);
+            this.on('*:restoreItems', this._restoreItems);
         },
 
         /**
@@ -223,6 +224,40 @@ YUI.add('ez-trashviewservice', function (Y) {
         },
 
         /**
+         * Restores trash items
+         *
+         * @method _restoreItems
+         * @protected
+         * @param {Object} e  restoreItems event facade
+         * @param {Array} e.trashItemsId  List of trashItems id to be restored
+         *
+         * @return {Boolean}
+         */
+        _restoreItems: function (e) {
+            var contentService = this.get('capi').getContentService(),
+                tasks = new Y.Parallel(),
+                service = this;
+
+            Y.each(e.trashItemsId, tasks.add(function (trashItemId) {
+                contentService.recover(trashItemId, function (error) {
+                    if (error) {
+                        service._error("Failed to restore the trash item with REST API");
+                    }
+                });
+            }));
+
+            tasks.done(function () {
+                /**
+                 * Fired once trash has just been emptied
+                 * @event refreshView
+                 */
+                service.fire('refreshView');
+
+                //TODO notifications (global one or many?)
+            });
+        },
+
+        /**
          * Fire 'notify' event
          *
          * @method _notify
@@ -230,7 +265,7 @@ YUI.add('ez-trashviewservice', function (Y) {
          * @param {String} text the text shown during the notification
          * @param {String} identifier the identifier of the notification
          * @param {String} state the state of the notification
-         * @param {Integer} timeout the number of second, the notification will be shown
+         * @param {Number} timeout the number of second, the notification will be shown
          */
         _notify: function (text, identifier, state, timeout) {
             this.fire('notify', {

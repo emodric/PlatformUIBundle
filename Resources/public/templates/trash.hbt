@@ -8,6 +8,7 @@
             <table class="ez-trashview-table pure-table pure-table-bordered">
                 <thead>
                 <tr>
+                    <th></th>
                     <th>Name</th>
                     <th>Type</th>
                     <th>Original Location</th>
@@ -16,6 +17,10 @@
                 <tbody>
                 {{#each trashItems}}
                     <tr>
+                        <td>
+                            <input class='ez-trashitem-box' type="checkbox"
+                                   data-trash-id="{{ item.id }}"/>
+                        </td>
                         <td>{{item.contentInfo.name}}</td>
                         <td>{{contentType.names.eng-GB}}</td>
                         <td>
